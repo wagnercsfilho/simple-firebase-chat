@@ -78,6 +78,7 @@ export default function Chat({ user }) {
       )}
       <form className="chat-footer" onSubmit={e => sendMessage(e)}>
         <input
+          value={text}
           onChange={e => setText(e.target.value)}
           className="chat-footer-input"
           placeholder="Escreva sua mensagem..."
