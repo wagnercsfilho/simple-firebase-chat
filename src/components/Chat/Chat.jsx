@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import classnames from 'classnames';
 import firebase from '../../services/firebase';
 import './Chat.css';
@@ -6,6 +6,13 @@ import './Chat.css';
 export default function Chat({ user }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const containerRef = useRef();
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }, 100);
+  }
 
   function getMessages() {
     const unsubscribe = firebase
@@ -14,6 +21,7 @@ export default function Chat({ user }) {
       .on('value', snapshot => {
         const messages = snapshot.val() || {};
         setMessages(Object.keys(messages).map(key => messages[key]));
+        scrollToBottom();
       });
 
     return () => unsubscribe();
@@ -58,24 +66,20 @@ export default function Chat({ user }) {
   return (
     <div className="chat">
       <header className="chat-header">TechTalk Chat</header>
-      {IsEmpty || (
-        <div className="chat-messages">
-          {messages.map(message => (
-            <div
-              key={message.id}
-              className={classnames({
-                'chat-messages-item-author': message.user.id === user.id,
-                'chat-messages-item': message.user.id !== user.id
-              })}
-            >
-              <div className="chat-message-text">{message.text}</div>
-              <div className="chat-message-username">
-                {message.user.username}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="chat-messages" ref={containerRef}>
+        {messages.map(message => (
+          <div
+            key={message.id}
+            className={classnames({
+              'chat-messages-item-author': message.user.id === user.id,
+              'chat-messages-item': message.user.id !== user.id
+            })}
+          >
+            <div className="chat-message-text">{message.text}</div>
+            <div className="chat-message-username">{message.user.username}</div>
+          </div>
+        ))}
+      </div>
       <form className="chat-footer" onSubmit={e => sendMessage(e)}>
         <input
           value={text}
